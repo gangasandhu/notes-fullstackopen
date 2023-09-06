@@ -52,44 +52,60 @@ let notes = [
 ]
 
 app.get('/', (req, res) => {
-    res.send("<h1>Hello world</h1>")
-})
-
-app.get('/api/notes', (req, res) => {
-    res.json(notes)
-})
-
-app.get('/api/notes/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    const note = notes.find(note => note.id === id)
-    if (note) {
-        res.json(note);
-    } else {
-        res.status(402).end();
+    res.send('<h1>Hello World!</h1>')
+  })
+  
+  const generateId = () => {
+    const maxId = notes.length > 0
+      ? Math.max(...notes.map(n => n.id))
+      : 0
+    return maxId + 1
+  }
+  
+  app.post('/api/notes', (request, response) => {
+    const body = request.body
+  
+    if (!body.content) {
+      return response.status(400).json({ 
+        error: 'content missing' 
+      })
     }
-})
-
-app.delete('/api/notes/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-
+  
+    const note = {
+      content: body.content,
+      important: body.important || false,
+      date: new Date(),
+      id: generateId(),
+    }
+  
+    notes = notes.concat(note)
+  
+    response.json(note)
+  })
+  
+  app.get('/api/notes', (req, res) => {
+    res.json(notes)
+  })
+  
+  app.delete('/api/notes/:id', (request, response) => {
+    const id = Number(request.params.id)
     notes = notes.filter(note => note.id !== id)
-
-    res.status(204).end()
-})
-
-app.post('/api/notes', (req, res) => {
-    const note = req.body
-
-    const maxId = notes.length > 0 ? Math.max(...notes.map(n => n.id)) : 0
-    console.log(maxId)
-    note.id = maxId + 1
-
-    notes = [...notes, note]
-
-    res.json(note)
-})
-
-const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-    console.log("server started successfully")
-})
+  
+    response.status(204).end()
+  })
+  
+  app.get('/api/notes/:id', (request, response) => {
+    const id = Number(request.params.id)
+    const note = notes.find(note => note.id === id)
+  
+    if (note) {
+      response.json(note)
+    } else {
+      response.status(404).end()
+    }
+  })
+  
+  const PORT = 3001
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+  })
