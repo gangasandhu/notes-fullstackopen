@@ -1,0 +1,19 @@
+
+services:
+  server:
+    image: notes-server
+    build: 
+      context: ./backend
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./backend/.env  
+  
+  client:
+    image: notes-client
+    build: 
+      context: ./frontend
+    ports:
+      - "8000:80"
+    depends_on:
+      - server
